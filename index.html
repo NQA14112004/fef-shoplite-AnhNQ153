@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ShopLite — a small demo shop built with vanilla JavaScript and the Fake Store API." />
+  <title>ShopLite · Home</title>
+
+  <!-- Bootstrap 5 + Bootstrap Icons + Google Font -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- ===================== Navbar ===================== -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+      <div class="container">
+        <a class="navbar-brand sl-brand" href="index.html">Shop<span class="sl-brand-dot">Lite</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+          aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+            <li class="nav-item">
+              <a class="nav-link sl-cart-link" href="cart.html" aria-label="View cart">
+                <i class="bi bi-cart3"></i>
+                <span class="sl-cart-badge" data-cart-badge aria-label="items in cart">0</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container py-4">
+    <!-- ===================== Hero ===================== -->
+    <section class="sl-hero mb-4" aria-label="Welcome">
+      <div class="sl-hero__content">
+        <h1>Everyday essentials, simply done.</h1>
+        <p class="lead">Browse a curated catalogue of electronics, fashion and more — powered live by the Fake Store API.</p>
+        <a href="#catalogue" class="btn btn-light btn-lg fw-semibold">Shop now <i class="bi bi-arrow-down"></i></a>
+      </div>
+      <div class="sl-hero__art" aria-hidden="true">🛍️</div>
+    </section>
+
+    <!-- ===================== Catalogue ===================== -->
+    <section id="catalogue" aria-label="Product catalogue">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h2 class="h4 m-0">Products</h2>
+        <small id="result-count" class="text-muted"></small>
+      </div>
+
+      <!-- Toolbar: search + filter + sort -->
+      <div class="sl-toolbar mb-4">
+        <div class="sl-search">
+          <label for="search-input" class="visually-hidden">Search products</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="search-input" placeholder="Search products…" />
+          </div>
+        </div>
+        <div>
+          <label for="category-select" class="visually-hidden">Filter by category</label>
+          <select id="category-select" class="form-select">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+        <div>
+          <label for="sort-select" class="visually-hidden">Sort products</label>
+          <select id="sort-select" class="form-select">
+            <option value="default">Sort: Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name-asc">Name: A → Z</option>
+            <option value="name-desc">Name: Z → A</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Product grid (filled by home.js) -->
+      <div id="product-grid" class="sl-grid" aria-live="polite"></div>
+
+      <!-- Loading / error / empty state -->
+      <div id="grid-state" class="sl-state" hidden></div>
+
+      <div class="text-center mt-4">
+        <button id="load-more" class="btn btn-outline-primary" hidden>
+          <i class="bi bi-arrow-clockwise"></i> Load more
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="sl-footer">
+    <div class="container d-flex flex-wrap justify-content-between gap-3">
+      <div>
+        <div class="sl-brand text-white">Shop<span class="sl-brand-dot">Lite</span></div>
+        <small>A front-end learning project · Fake Store API</small>
+      </div>
+      <nav aria-label="Footer">
+        <a href="index.html" class="me-3">Home</a>
+        <a href="cart.html" class="me-3">Cart</a>
+        <a href="register.html">Register</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Bootstrap bundle (navbar collapse) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- App scripts: order matters (api → ui → cart → page) -->
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>
