@@ -1,13 +1,12 @@
 /* ============================================================
    ShopLite — custom stylesheet
    Bootstrap 5 handles base components; this file adds the
-   HAND-WRITTEN Flexbox / Grid layouts, theming and responsive
+   hand-written Flexbox / Grid layouts, theming and responsive
    tweaks required by the assignment.
    ============================================================ */
 
 :root {
   --sl-primary: #2563eb;
-  --sl-primary-dark: #1d4ed8;
   --sl-accent: #f59e0b;
   --sl-bg: #f6f7fb;
   --sl-card: #ffffff;
@@ -44,7 +43,7 @@ a { text-decoration: none; }
 
 .navbar .nav-link.active { font-weight: 600; color: var(--sl-primary) !important; }
 
-/* Cart icon + badge */
+/* Cart icon + count badge */
 .sl-cart-link { position: relative; font-size: 1.25rem; }
 .sl-cart-badge {
   position: absolute;
@@ -58,20 +57,12 @@ a { text-decoration: none; }
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
-  display: inline-flex;
+  display: none;             /* hidden until there is something in the cart */
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transform: scale(0);
-  transition: transform 0.18s ease;
 }
-.sl-cart-badge.show { transform: scale(1); }
-.sl-cart-badge.bump { animation: badge-bump 0.35s ease; }
-@keyframes badge-bump {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.35); }
-  100% { transform: scale(1); }
-}
+.sl-cart-badge.show { display: inline-flex; }
 
 /* ----------------------------- Hero ----------------------------- */
 .sl-hero {
@@ -162,35 +153,13 @@ a { text-decoration: none; }
   font-weight: 700;
   color: var(--sl-primary);
 }
-.sl-card__rating { font-size: 0.8rem; color: var(--sl-accent); }
-.sl-card__rating .count { color: var(--sl-muted); }
+.sl-card__rating { font-size: 0.85rem; color: var(--sl-accent); }
 .sl-card__actions {
   margin-top: auto;
   display: flex;
   gap: 0.5rem;
 }
 .sl-card__actions .btn { flex: 1; }
-
-/* ---------------------- Skeleton loaders ---------------------- */
-.sl-skeleton {
-  background: var(--sl-card);
-  border: 1px solid var(--sl-border);
-  border-radius: var(--sl-radius);
-  overflow: hidden;
-}
-.sl-skel-box {
-  background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.3s ease infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-}
-.sl-skel-media { height: 200px; }
-.sl-skel-line { height: 12px; border-radius: 6px; margin: 0.6rem 1rem; }
-.sl-skel-line.short { width: 40%; }
-.sl-skel-line.title { height: 16px; }
 
 /* ------------------------- Toolbar ------------------------- */
 .sl-toolbar {
@@ -293,36 +262,6 @@ a { text-decoration: none; }
 .form-select.is-invalid { border-color: #dc2626; }
 .form-control.is-valid,
 .form-select.is-valid { border-color: #16a34a; }
-
-/* --------------------------- Toasts --------------------------- */
-.sl-toast-container {
-  position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  z-index: 1080;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  max-width: 90vw;
-}
-.sl-toast {
-  background: #111827;
-  color: #fff;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  box-shadow: var(--sl-shadow);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-  transform: translateY(20px);
-  opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.sl-toast.show { transform: translateY(0); opacity: 1; }
-.sl-toast.success { background: #16a34a; }
-.sl-toast.error { background: #dc2626; }
-.sl-toast.info { background: #2563eb; }
 
 /* --------------------------- States --------------------------- */
 .sl-state {

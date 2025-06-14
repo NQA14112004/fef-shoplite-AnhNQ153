@@ -1,9 +1,8 @@
 /* ============================================================
-   cart-page.js — Cart page controller.
-   Renders cart items, supports +/- quantity and remove via
-   EVENT DELEGATION (one listener on the list), keeps the total
-   in sync, and shows an empty-cart state. Persistence lives in
-   the shared Cart module (cart.js).
+   cart-page.js — Cart page.
+   Shows the items saved in the cart, lets the user change the
+   quantity or remove items, and keeps the total up to date.
+   The cart itself is stored by the shared Cart module (cart.js).
    ============================================================ */
 (function () {
   "use strict";
@@ -18,30 +17,29 @@
   const clearBtn = document.getElementById("clear-cart");
   const checkoutBtn = document.getElementById("checkout-btn");
 
-  const SHIPPING_FLAT = 0; // free shipping in this demo
-
-  function itemTemplate(item) {
-    return `
-      <li class="sl-cart-item" data-id="${item.id}">
-        <img class="sl-cart-item__img" src="${UI.escapeHtml(item.image)}" alt="${UI.escapeHtml(item.title)}">
-        <div class="sl-cart-item__info">
-          <div class="sl-cart-item__title">${UI.escapeHtml(item.title)}</div>
-          <div class="text-muted small">${UI.formatPrice(item.price)} each</div>
-        </div>
-        <div class="sl-qty" aria-label="Quantity">
-          <button type="button" data-action="dec" aria-label="Decrease quantity">−</button>
-          <span>${item.qty}</span>
-          <button type="button" data-action="inc" aria-label="Increase quantity">+</button>
-        </div>
-        <div class="fw-bold" style="min-width:90px;text-align:right">
-          ${UI.formatPrice(item.price * item.qty)}
-        </div>
-        <button class="btn btn-sm btn-outline-danger" data-action="remove" aria-label="Remove item">
-          <i class="bi bi-trash"></i>
-        </button>
-      </li>`;
+  // Build the HTML for one cart row.
+  function rowHTML(item) {
+    return (
+      '<li class="sl-cart-item">' +
+        '<img class="sl-cart-item__img" src="' + UI.escapeHtml(item.image) + '" alt="' + UI.escapeHtml(item.title) + '">' +
+        '<div class="sl-cart-item__info">' +
+          '<div class="sl-cart-item__title">' + UI.escapeHtml(item.title) + "</div>" +
+          '<div class="text-muted small">' + UI.formatPrice(item.price) + " each</div>" +
+        "</div>" +
+        '<div class="sl-qty">' +
+          '<button type="button" class="js-dec" aria-label="Decrease">−</button>' +
+          "<span>" + item.qty + "</span>" +
+          '<button type="button" class="js-inc" aria-label="Increase">+</button>' +
+        "</div>" +
+        '<div class="fw-bold" style="min-width:90px;text-align:right">' +
+          UI.formatPrice(item.price * item.qty) +
+        "</div>" +
+        '<button class="btn btn-sm btn-outline-danger js-remove" aria-label="Remove"><i class="bi bi-trash"></i></button>' +
+      "</li>"
+    );
   }
 
+  // Draw the cart. If it is empty, show the empty message instead.
   function render() {
     const items = Cart.getCart();
 
@@ -54,62 +52,41 @@
 
     emptyEl.hidden = true;
     summaryEl.hidden = false;
-    listEl.innerHTML = items.map(itemTemplate).join("");
+    listEl.innerHTML = items.map(rowHTML).join("");
 
-    const subtotal = Cart.getTotal();
-    subtotalEl.textContent = UI.formatPrice(subtotal);
-    totalEl.textContent = UI.formatPrice(subtotal + SHIPPING_FLAT);
-  }
+    const total = Cart.getTotal();
+    subtotalEl.textContent = UI.formatPrice(total);
+    totalEl.textContent = UI.formatPrice(total);
 
-  // Single delegated handler for inc / dec / remove on every row.
-  function onListClick(e) {
-    const btn = e.target.closest("[data-action]");
-    if (!btn) return;
-    const row = btn.closest("[data-id]");
-    if (!row) return;
-    const id = Number(row.dataset.id);
-
-    switch (btn.dataset.action) {
-      case "inc":
+    // Attach +/- and remove handlers to each row.
+    const rows = listEl.querySelectorAll(".sl-cart-item");
+    rows.forEach(function (row, index) {
+      const id = items[index].id;
+      row.querySelector(".js-inc").addEventListener("click", function () {
         Cart.changeQty(id, 1);
-        break;
-      case "dec":
+        render();
+      });
+      row.querySelector(".js-dec").addEventListener("click", function () {
         Cart.changeQty(id, -1);
-        break;
-      case "remove":
+        render();
+      });
+      row.querySelector(".js-remove").addEventListener("click", function () {
         Cart.removeItem(id);
-        UI.showToast("Item removed", "info");
-        break;
-      default:
-        return;
-    }
-    render();
-  }
-
-  function bindEvents() {
-    listEl.addEventListener("click", onListClick);
-
-    clearBtn.addEventListener("click", () => {
-      if (Cart.getCount() === 0) return;
-      Cart.clear();
-      render();
-      UI.showToast("Cart emptied", "info");
-    });
-
-    checkoutBtn.addEventListener("click", () => {
-      UI.showToast("Checkout is a demo — order placed! 🎉", "success");
-      Cart.clear();
-      render();
-    });
-
-    // React to changes coming from other tabs.
-    window.addEventListener("storage", (e) => {
-      if (e.key === "shoplite_cart") render();
+        render();
+      });
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    bindEvents();
+  clearBtn.addEventListener("click", function () {
+    Cart.clear();
     render();
   });
+
+  checkoutBtn.addEventListener("click", function () {
+    alert("This is a demo store — your order has been placed!");
+    Cart.clear();
+    render();
+  });
+
+  document.addEventListener("DOMContentLoaded", render);
 })();

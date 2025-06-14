@@ -1,96 +1,91 @@
 /* ============================================================
    register.js — Register / Contact form validation.
-   Validation is done in JavaScript (not just HTML attributes):
-   per-field error messages, live re-validation, blocked submit
-   on error, and a success message when everything is valid.
+   We check each field with JavaScript (not just HTML), show an
+   error message under any invalid field, stop the form from
+   submitting if there are errors, and show a success message
+   when everything is valid.
    ============================================================ */
 (function () {
   "use strict";
 
-  const { UI } = window;
-
   const form = document.getElementById("register-form");
   const successBox = document.getElementById("form-success");
 
-  // Validation rules keyed by the field's `name`.
-  const rules = {
-    fullName: (v) =>
-      v.trim().length >= 2 ? "" : "Please enter your full name (at least 2 characters).",
-    email: (v) =>
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? "" : "Please enter a valid email address.",
-    password: (v) =>
-      v.length >= 6 ? "" : "Password must be at least 6 characters.",
-    phone: (v) =>
-      /^[0-9+\-\s()]{8,15}$/.test(v.trim())
-        ? ""
-        : "Please enter a valid phone number (8–15 digits).",
-    country: (v) => (v ? "" : "Please choose a country."),
-    terms: (checked) => (checked ? "" : "You must agree to the terms."),
-  };
-
-  /** Read a field's value (checkbox → boolean, else string). */
-  function getValue(field) {
-    return field.type === "checkbox" ? field.checked : field.value;
+  // Check one field. Return an error message, or "" if it is OK.
+  function getError(name, value) {
+    if (name === "fullName") {
+      return value.trim().length >= 2 ? "" : "Please enter your full name.";
+    }
+    if (name === "email") {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailPattern.test(value.trim()) ? "" : "Please enter a valid email address.";
+    }
+    if (name === "password") {
+      return value.length >= 6 ? "" : "Password must be at least 6 characters.";
+    }
+    if (name === "phone") {
+      const phonePattern = /^[0-9+\-\s()]{8,15}$/;
+      return phonePattern.test(value.trim()) ? "" : "Please enter a valid phone number.";
+    }
+    if (name === "country") {
+      return value ? "" : "Please choose a country.";
+    }
+    if (name === "terms") {
+      return value ? "" : "You must agree to the terms.";
+    }
+    return "";
   }
 
-  /** Show or clear the error for one field; returns true if valid. */
+  // Validate one field and show/clear its error message.
+  // Returns true when the field is valid.
   function validateField(field) {
-    const rule = rules[field.name];
-    if (!rule) return true;
-
-    const message = rule(getValue(field));
-    const errorEl = form.querySelector(`[data-error-for="${field.name}"]`);
-    const isValid = message === "";
+    const value = field.type === "checkbox" ? field.checked : field.value;
+    const message = getError(field.name, value);
+    const errorEl = form.querySelector('[data-error-for="' + field.name + '"]');
 
     if (errorEl) errorEl.textContent = message;
-    field.classList.toggle("is-invalid", !isValid);
-    field.classList.toggle("is-valid", isValid);
-    return isValid;
+    field.classList.toggle("is-invalid", message !== "");
+    field.classList.toggle("is-valid", message === "");
+    return message === "";
   }
 
-  function validateAll() {
-    let allValid = true;
-    Object.keys(rules).forEach((name) => {
+  // Validate every field. Returns true only if all are valid.
+  function validateForm() {
+    const names = ["fullName", "email", "password", "phone", "country", "terms"];
+    let valid = true;
+    names.forEach(function (name) {
       const field = form.elements[name];
-      if (field && !validateField(field)) allValid = false;
+      if (field && !validateField(field)) valid = false;
     });
-    return allValid;
+    return valid;
   }
 
-  function onSubmit(e) {
-    e.preventDefault();
+  // When the form is submitted.
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); // stop the page from reloading
     successBox.hidden = true;
 
-    if (!validateAll()) {
-      UI.showToast("Please fix the highlighted fields.", "error");
-      // Move focus to the first invalid field for accessibility.
+    if (!validateForm()) {
       const firstInvalid = form.querySelector(".is-invalid");
       if (firstInvalid) firstInvalid.focus();
-      return;
+      return; // do not submit while there are errors
     }
 
     const name = form.elements.fullName.value.trim();
     successBox.hidden = false;
-    successBox.textContent = `Thanks, ${name}! Your account has been created.`;
-    UI.showToast("Registration successful 🎉", "success");
+    successBox.textContent = "Thanks, " + name + "! Your account has been created.";
     form.reset();
-    // Clear the valid/invalid styling after a successful reset.
-    form.querySelectorAll(".is-valid, .is-invalid").forEach((el) =>
-      el.classList.remove("is-valid", "is-invalid")
-    );
-  }
-
-  function bindEvents() {
-    form.addEventListener("submit", onSubmit);
-
-    // Live validation: re-check a field as the user edits it.
-    form.addEventListener("input", (e) => {
-      if (rules[e.target.name]) validateField(e.target);
+    // Remove the green/red styling after resetting.
+    form.querySelectorAll(".is-valid, .is-invalid").forEach(function (el) {
+      el.classList.remove("is-valid", "is-invalid");
     });
-    form.addEventListener("change", (e) => {
-      if (rules[e.target.name]) validateField(e.target);
-    });
-  }
+  });
 
-  document.addEventListener("DOMContentLoaded", bindEvents);
+  // Re-check a field as soon as the user changes it.
+  form.addEventListener("input", function (e) {
+    validateField(e.target);
+  });
+  form.addEventListener("change", function (e) {
+    validateField(e.target);
+  });
 })();

@@ -1,122 +1,96 @@
 /* ============================================================
-   cart.js — cart state + localStorage persistence.
-   Exposed as window.Cart. Loaded on EVERY page so the navbar
-   badge stays in sync (including across browser tabs via the
-   native `storage` event).
+   cart.js — cart logic + localStorage. Exposed as window.Cart.
+   Loaded on every page so the navbar count is correct.
 
    localStorage key: "shoplite_cart"
-   value shape: Array<{ id, title, price, image, qty }>
+   value: an array of items, each { id, title, price, image, qty }
    ============================================================ */
 (function () {
   "use strict";
 
   const STORAGE_KEY = "shoplite_cart";
 
-  /** Read + parse the cart, tolerating corrupt/empty storage. */
+  // Read the cart from localStorage (returns [] if empty/broken).
   function getCart() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
     } catch {
       return [];
     }
   }
 
-  /** Persist the cart and refresh the badge. */
+  // Save the cart and refresh the navbar count.
   function saveCart(items) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     updateBadge();
   }
 
-  /** Add a product (or bump its quantity if already present). */
-  function addToCart(product, qty = 1) {
+  // Add a product. If it is already in the cart, raise its quantity.
+  function addToCart(product, qty) {
+    const amount = qty || 1;
     const items = getCart();
-    const existing = items.find((it) => it.id === product.id);
+    const existing = items.find((item) => item.id === product.id);
     if (existing) {
-      existing.qty += qty;
+      existing.qty += amount;
     } else {
       items.push({
         id: product.id,
         title: product.title,
         price: product.price,
         image: product.image,
-        qty,
+        qty: amount,
       });
     }
     saveCart(items);
-    return items;
   }
 
-  /** Set an exact quantity; quantities ≤ 0 remove the item. */
-  function setQty(id, qty) {
-    let items = getCart();
-    if (qty <= 0) {
-      items = items.filter((it) => it.id !== id);
-    } else {
-      const item = items.find((it) => it.id === id);
-      if (item) item.qty = qty;
-    }
-    saveCart(items);
-    return items;
-  }
-
-  /** Increment/decrement helper used by the +/- buttons. */
+  // Change quantity by +1 or -1. If it reaches 0, remove the item.
   function changeQty(id, delta) {
-    const item = getCart().find((it) => it.id === id);
-    if (!item) return getCart();
-    return setQty(id, item.qty + delta);
+    const items = getCart();
+    const item = items.find((it) => it.id === id);
+    if (!item) return;
+    item.qty += delta;
+    const next = item.qty <= 0 ? items.filter((it) => it.id !== id) : items;
+    saveCart(next);
   }
 
-  /** Remove one product entirely. */
+  // Remove one product completely.
   function removeItem(id) {
-    const items = getCart().filter((it) => it.id !== id);
-    saveCart(items);
-    return items;
+    saveCart(getCart().filter((it) => it.id !== id));
   }
 
-  /** Empty the whole cart. */
+  // Empty the whole cart.
   function clear() {
     saveCart([]);
   }
 
-  /** Total number of units (sum of quantities). */
+  // Total number of items (sum of quantities) — used for the badge.
   function getCount() {
     return getCart().reduce((sum, it) => sum + it.qty, 0);
   }
 
-  /** Total price across all items. */
+  // Total price of everything in the cart.
   function getTotal() {
     return getCart().reduce((sum, it) => sum + it.price * it.qty, 0);
   }
 
-  /** Update every cart badge currently on the page. */
+  // Show the current count on the navbar cart badge.
   function updateBadge() {
     const count = getCount();
-    document.querySelectorAll("[data-cart-badge]").forEach((badge) => {
-      badge.textContent = count;
-      badge.classList.toggle("show", count > 0);
-      if (count > 0) {
-        badge.classList.remove("bump");
-        // force reflow so the animation can replay
-        void badge.offsetWidth;
-        badge.classList.add("bump");
-      }
-    });
+    const badge = document.querySelector("[data-cart-badge]");
+    if (!badge) return;
+    badge.textContent = count;
+    badge.classList.toggle("show", count > 0);
   }
 
-  // Keep the badge in sync when another tab changes the cart.
-  window.addEventListener("storage", (e) => {
-    if (e.key === STORAGE_KEY) updateBadge();
-  });
-
-  // Initialise the badge as soon as the DOM is ready.
+  // Set the badge as soon as the page is ready.
   document.addEventListener("DOMContentLoaded", updateBadge);
 
   window.Cart = {
     getCart,
     addToCart,
-    setQty,
     changeQty,
     removeItem,
     clear,

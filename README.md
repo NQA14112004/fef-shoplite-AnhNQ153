@@ -1,8 +1,8 @@
 # ShopLite — Mini E-Commerce (FEF Long Assignment)
 
-A multi-page shopping website built with **semantic HTML5, hand-written CSS (Flexbox + Grid), Bootstrap 5, and vanilla JavaScript**. Product data is fetched live from the [Fake Store API](https://fakestoreapi.com/) — nothing is hard-coded. The cart is persisted in `localStorage` and stays in sync across pages and browser tabs.
+A multi-page shopping website built with **semantic HTML5, hand-written CSS (Flexbox + Grid), Bootstrap 5, and vanilla JavaScript**. Product data is fetched live from the [Fake Store API](https://fakestoreapi.com/) — nothing is hard-coded. The cart is saved in `localStorage` so it survives moving between pages.
 
-> Assignment code: **FEF-LA-01** · No backend · No JS framework.
+> Assignment code: **FEF-LA-01** · No backend · No JS framework. Target: **Good tier (7–8)**.
 
 ---
 
@@ -32,16 +32,10 @@ No build step is required. Because the pages use `fetch()`, serve them over **ht
 1. Open the folder in VS Code.
 2. Right-click `index.html` → **Open with Live Server**.
 
-**Option B — Python (any OS with Python 3)**
-```bash
-cd fef-shoplite-AnhNQ153
-python -m http.server 5500
-# then open http://localhost:5500
-```
-
-**Option C — Node**
+**Option B — Node**
 ```bash
 npx serve .
+# then open the printed http://localhost address
 ```
 
 ---
@@ -57,61 +51,53 @@ fef-shoplite-AnhNQ153/
 ├── css/
 │   └── style.css       # Hand-written Flexbox/Grid + theme
 ├── js/
-│   ├── api.js          # Shared fetch layer (window.API)
-│   ├── ui.js           # Helpers: toast, debounce, format, escape (window.UI)
-│   ├── cart.js         # Cart logic + localStorage + badge (window.Cart)
-│   ├── home.js         # Home page controller
-│   ├── product.js      # Detail page controller
-│   ├── cart-page.js    # Cart page controller
+│   ├── api.js          # Shared fetch functions (window.API)
+│   ├── ui.js           # Helpers: formatPrice, escapeHtml (window.UI)
+│   ├── cart.js         # Cart logic + localStorage (window.Cart)
+│   ├── home.js         # Home page
+│   ├── product.js      # Detail page
+│   ├── cart-page.js    # Cart page
 │   └── register.js     # Form validation
 ├── assets/             # images / screenshots
 └── README.md
 ```
 
-### Architecture notes
-- **No globals leak:** every file is an IIFE that exposes a single namespace (`API`, `UI`, `Cart`).
-- **Script order matters:** `api.js → ui.js → cart.js → <page>.js`.
-- **One fetch layer:** all network calls go through `api.js`, which checks `res.ok` and uses `try/catch`.
-- **Cart is the single source of truth:** `cart.js` owns the `shoplite_cart` localStorage key; pages only call its methods.
+### How the code fits together
+- Each JS file is wrapped in an IIFE and exposes one object: `API`, `UI`, or `Cart`.
+- Script load order on each page: `api.js → ui.js → cart.js → <page>.js`.
+- All network calls go through `api.js`, which checks `res.ok` and uses `try/catch`.
+- `cart.js` is the only file that touches the `shoplite_cart` localStorage key.
 
 ---
 
-## ✅ Completed features (by rubric tier)
+## ✅ Completed features
 
 ### Pass tier (foundation)
 - [x] All **4 pages** linked through a shared navbar + footer.
-- [x] **Semantic HTML** (`header/nav/main/section/article/aside/footer`), minimal `div` soup.
+- [x] **Semantic HTML** (`header / nav / main / section / article / aside / footer`).
 - [x] Home page **fetches and renders** the product list with the DOM (no hard-coded products).
-- [x] Detail page shows the **correct product by `id`** from the query string.
+- [x] Detail page shows the **correct product by `id`** read from the query string.
 - [x] Register form has **JavaScript validation** (required fields, valid email, etc.).
-- [x] **Responsive** — no layout breakage on mobile; navbar collapses.
+- [x] **Responsive** — no layout breakage on mobile; the navbar collapses.
 
 ### Good tier (intermediate)
-- [x] **Full cart**: add / remove / change quantity, live total, persisted in `localStorage` across pages.
-- [x] **Search + filter by category**, updating the grid immediately.
-- [x] Proper **loading (skeleton) and error states** — never a blank screen.
-- [x] **Hand-written Flexbox/Grid**, smooth across mobile / tablet / desktop breakpoints.
+- [x] **Full cart**: add / remove / change quantity, live total, saved in `localStorage` across pages.
+- [x] **Search by name + filter by category**, updating the grid immediately.
+- [x] **Loading (spinner) and error states** — never a blank screen, with a "Try again" button.
+- [x] **Hand-written Flexbox/Grid** layout, responsive at mobile / tablet / desktop.
 
-### Excellent tier (advanced)
-- [x] **Event delegation** — a single listener on the grid and on the cart list handles all dynamic items.
-- [x] **Sorting** (price ↑/↓, name A→Z / Z→A) combined with search + filter simultaneously.
-- [x] **Cart count badge** on the navbar, synced across pages and across tabs (`storage` event).
-- [x] **"Load more" pagination** for the product list.
-- [x] **Polish**: skeleton loaders, **toast** notifications, **debounce** on the search box.
-- [x] **Clean code**: reusable modules/functions, no duplication, consistent naming, this README.
+> Scope note: advanced "Excellent tier" extras (sorting, pagination, debounce, toast pop-ups, event delegation, cross-tab sync) were intentionally left out to keep the code simple and easy to explain.
 
 ---
 
 ## 🧪 How to test the key flows
-1. **Home** loads → skeletons appear → product grid renders.
-2. Type in **search** (debounced), pick a **category**, change **sort** → grid updates instantly; combine all three.
-3. Click **Load more** → 8 more products appear.
-4. Click **Add** on a card → toast shows, navbar badge bumps.
-5. Open a product via **Details** → detail page reads `?id=`; pick a quantity and add to cart.
-6. Open **Cart** → adjust quantities (+/−), remove items, watch the total update; **Empty cart** shows the empty state.
-7. Open a second tab on **Cart** → change the cart in tab 1 → badge/total update in tab 2.
-8. **Register** → submit empty → per-field errors; fill correctly → success message + toast.
-9. Disconnect the network and reload Home → friendly **error state** with a **Try again** button.
+1. **Home** loads → spinner shows → product grid renders.
+2. Type in **search** and pick a **category** → the grid filters instantly.
+3. Click **Add** on a card → the button shows "Added ✓" and the navbar count goes up.
+4. Click **Details** → the detail page reads `?id=`; choose a quantity and add to cart.
+5. Open **Cart** → change quantities (+/−), remove items, watch the total update; remove everything → empty-cart message.
+6. **Register** → submit empty → per-field errors appear; fill it in correctly → success message.
+7. Turn off the network and reload Home → a friendly **error message** with **Try again**.
 
 ---
 
@@ -120,11 +106,6 @@ fef-shoplite-AnhNQ153/
 |---|---|
 | Markup | Semantic HTML5 |
 | Styling | Hand-written CSS (Flexbox + Grid) + **Bootstrap 5** + Bootstrap Icons + Poppins |
-| Logic | **Vanilla JavaScript** (ES2020), `async/await` |
+| Logic | **Vanilla JavaScript**, `async/await` |
 | Data | **Fake Store API** via **Fetch API** |
-| Persistence | `localStorage` |
-
----
-
-## 📋 Git history
-Work was committed incrementally (skeleton → styling → fetch → detail → cart → validation → advanced features → docs) rather than as a single "final" commit.
+| Storage | `localStorage` |

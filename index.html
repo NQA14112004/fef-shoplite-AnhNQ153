@@ -71,16 +71,6 @@
             <option value="all">All categories</option>
           </select>
         </div>
-        <div>
-          <label for="sort-select" class="visually-hidden">Sort products</label>
-          <select id="sort-select" class="form-select">
-            <option value="default">Sort: Featured</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="name-asc">Name: A → Z</option>
-            <option value="name-desc">Name: Z → A</option>
-          </select>
-        </div>
       </div>
 
       <!-- Product grid (filled by home.js) -->
@@ -88,12 +78,6 @@
 
       <!-- Loading / error / empty state -->
       <div id="grid-state" class="sl-state" hidden></div>
-
-      <div class="text-center mt-4">
-        <button id="load-more" class="btn btn-outline-primary" hidden>
-          <i class="bi bi-arrow-clockwise"></i> Load more
-        </button>
-      </div>
     </section>
   </main>
 
