@@ -10,7 +10,6 @@ A multi-page shopping website built with **semantic HTML5, hand-written CSS (Fle
 
 > Deploy with GitHub Pages / Netlify / Vercel and paste the link here:
 >
-> **Demo:** `https://<your-deploy-url>`
 
 ---
 
